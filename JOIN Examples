@@ -1,16 +1,21 @@
 This SQL query uses joins to provide the top 10 films by revenue and their categories:
 
 SELECT
-  A.title,
-  F.name AS film_category,
-  SUM(D.amount) AS total_revenue
-FROM film A
-  JOIN inventory B ON A.film_id = B.film_id
-  JOIN rental C ON B.inventory_id = C.inventory_id
-  JOIN payment D ON C.rental_id = D.rental_id
-  JOIN film_category E ON A.film_id = E.film_id
-  JOIN category F ON E.category_id = F.category_id
-GROUP BY A.title, F.name
+  f.title,
+  c.name AS film_category,
+  SUM(p.amount) AS total_revenue
+FROM film AS f
+  JOIN inventory AS i
+  ON f.film_id = i.film_id
+  JOIN rental AS r
+  ON i.inventory_id = r.inventory_id
+  JOIN payment AS p
+  ON r.rental_id = p.rental_id
+  JOIN film_category AS fc
+  ON f.film_id = fc.film_id
+  JOIN category AS c
+  ON fc.category_id = c.category_id
+GROUP BY f.title, film_category
 ORDER BY total_revenue DESC
 LIMIT 10;
 
@@ -18,12 +23,15 @@ LIMIT 10;
 This SQL query uses inner joins to provide a count of the top 10 countries with the most customers:
 
 SELECT
-  D.country,
-  COUNT(A.customer_id) AS number_of_customers
-FROM customer A
-  INNER JOIN address B ON A.address_id = B.address_id
-  INNER JOIN city C ON B.city_id = C.city_id
-  INNER JOIN country D ON C.country_id = D.country_id
-GROUP BY D.country
+  co.country,
+  COUNT(cu.customer_id) AS number_of_customers
+FROM customer AS cu
+  INNER JOIN address AS a
+  ON cu.address_id = a.address_id
+  INNER JOIN city AS c
+  ON a.city_id = c.city_id
+  INNER JOIN country AS co
+  ON c.country_id = co.country_id
+GROUP BY co.country
 ORDER BY number_of_customers DESC
 LIMIT 10;
