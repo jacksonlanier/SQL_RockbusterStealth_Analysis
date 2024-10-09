@@ -3,64 +3,64 @@ This query uses CTEs to find the average of total payments made by the top 5 hig
 /* Selecting the top 10 countries with the most customers */
 WITH top_countries AS 
 	(SELECT 
-    co.country,
+		co.country,
 		COUNT (cu.customer_id) AS customer_count
-    FROM customer AS cu
-      INNER JOIN address AS a
-      ON cu.address_id = a.address_id
-      INNER JOIN city AS ci
-      ON a.city_id = ci.city_id
-      INNER JOIN country AS co
-      ON ci.country_id = co.country_id
-  	GROUP BY co.country
-	  ORDER BY customer_count DESC
-  	LIMIT 10),
+		FROM customer AS cu
+		      INNER JOIN address AS a
+		      ON cu.address_id = a.address_id
+		      INNER JOIN city AS ci
+		      ON a.city_id = ci.city_id
+		      INNER JOIN country AS co
+		      ON ci.country_id = co.country_id
+		GROUP BY co.country
+		ORDER BY customer_count DESC
+		LIMIT 10),
 
 /* Selecting the top 10 cities with the most customers within the top 10 countries */
 top_cities AS
 	(SELECT 
-    ci.city,
+    		ci.city,
 		co.country,
 		COUNT (cu.customer_id) AS customer_count
-  	 FROM customer AS cu
-      INNER JOIN address AS a
-      ON cu.address_id = a.address_id
-      INNER JOIN city AS ci
-      ON a.city_id = ci.city_id
-      INNER JOIN country AS co
-      ON ci.country_id = co.country_id
-  	WHERE co.country IN (SELECT country FROM top_countries)
-  	GROUP BY co.country, ci.city
-  	ORDER BY  customer_count DESC
-  	LIMIT 10),
+  	 	FROM customer AS cu
+		      INNER JOIN address AS a
+		      ON cu.address_id = a.address_id
+		      INNER JOIN city AS ci
+		      ON a.city_id = ci.city_id
+		      INNER JOIN country AS co
+		      ON ci.country_id = co.country_id
+	  	WHERE co.country IN (SELECT country FROM top_countries)
+	  	GROUP BY co.country, ci.city
+	  	ORDER BY  customer_count DESC
+	  	LIMIT 10),
 
 /* Selecting the top 5 highest paying customers with the top 10 cities */
 top_payments AS 
 	(SELECT 
-    p.customer_id,
+   		 p.customer_id,
 		cu.first_name,
 		cu.last_name,
 		ci.city,
 		co.country,
 		SUM (p.amount) AS total_amount_paid
-  	FROM payment AS p
-  		INNER JOIN customer AS cu 
-      ON p.customer_id = cu.customer_id
-  		INNER JOIN address AS a 
-      ON cu.address_id = a.address_id
-  		INNER JOIN city AS ci 
-      ON a.city_id = ci.city_id
-  		INNER JOIN country AS co 
-      ON ci.country_id = co.country_id
-	WHERE ci.city IN (SELECT city FROM top_cities)
-	GROUP BY
-    co.country,
+  		FROM payment AS p
+	  		INNER JOIN customer AS cu 
+	     		 ON p.customer_id = cu.customer_id
+	  		INNER JOIN address AS a 
+	     		 ON cu.address_id = a.address_id
+	  		INNER JOIN city AS ci 
+	     		 ON a.city_id = ci.city_id
+	  		INNER JOIN country AS co 
+	      		ON ci.country_id = co.country_id
+		WHERE ci.city IN (SELECT city FROM top_cities)
+		GROUP BY
+    		co.country,
 		ci.city,
 		p.customer_id,
 		cu.first_name,
 		cu.last_name
-	ORDER BY total_amount_paid DESC
-	LIMIT 5)
+		ORDER BY total_amount_paid DESC
+		LIMIT 5)
 
 /* Calculating the average of total payments by the top 5 customers */
 SELECT AVG (total_amount_paid) AS average_payment
